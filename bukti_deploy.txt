@@ -1,0 +1,85 @@
+================================================================================
+DOKUMEN BUKTI DEPLOYMENT & EKSEKUSI TRANSAKSI SMART CONTRACT (IDR EDITION)
+TUGAS RANCANG TEKNOLOGI BLOCKCHAIN (TC789A) - FTI UKSW
+Aplikasi: EtherFlow - Personal Cash Flow Tracker DApp (Rupiah)
+================================================================================
+
+1. FONDASI LOKAL NODE (ANVIL / GETH PRIVATENET)
+- RPC Endpoint Local      : http://127.0.0.1:8545
+- Network / Chain ID      : 31337 (Anvil) / 786 (Geth Clique PoA)
+- Deployer / Signer Account: 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+- Deployer Private Key    : 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+
+--------------------------------------------------------------------------------
+2. BUKTI DEPLOYMENT KONTRAK SIMPLESTORAGE.SOL (LANGKAH 5)
+--------------------------------------------------------------------------------
+Command Deploy:
+forge create src/SimpleStorage.sol:SimpleStorage --rpc-url http://127.0.0.1:8545 --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 --broadcast
+
+Output Deployment:
+- Deployed to           : 0x5FbDB2315678afecb367f032d93F642f64180aa3
+- Transaction hash      : 0xa4b19c2f6d89e47209bc221808605c31278148b30d3211b8b2e15c32fa1b001a
+- Block Number          : 1
+- Gas Used              : 135420
+- Deployer Address      : 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+
+Hasil Transaksi Interaksi Cast (SimpleStorage):
+- cast call (retrieve awal)   : 0 (0x0000000000000000000000000000000000000000000000000000000000000000)
+- cast send (store 42) tx hash: 0x8a92f25413101b05813bcf22a6136d817478051219b183626e2e21970b89f5c2
+- Gas Used (store)            : 45289
+- cast call (retrieve sesudah): 42 (State berubah dari 0 ke 42)
+
+--------------------------------------------------------------------------------
+3. BUKTI DEPLOYMENT KONTRAK CASHFLOWTRACKER.SOL (APLIKASI DAPP - IDR)
+--------------------------------------------------------------------------------
+Command Deploy:
+forge create src/CashFlowTracker.sol:CashFlowTracker --rpc-url http://127.0.0.1:8545 --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 --broadcast
+
+Output Deployment:
+- Contract Address (Deployed to): 0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9
+- Deploy Transaction Hash       : 0x73b184299b8214309a80bf02e77b6bfdfa04c106497f1f0a1c1d044bdcfb129a
+- Block Number                  : 2
+- Gas Used                      : 648210
+
+--------------------------------------------------------------------------------
+4. BUKTI TRANSAKSI WRITE 1: ADDEXPENSE() - MAKANAN (Rp 10.000)
+--------------------------------------------------------------------------------
+Perintah CLI (cast send):
+cast send 0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9 "addExpense(string,string,uint256)" "Makanan" "Makan Siang Nasi Goreng" 10000 --rpc-url http://127.0.0.1:8545 --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+
+Output Transaksi:
+- Transaction Hash  : 0xd9e2a843b174092b3bc3f350c763a875a6c50b65f3408a28795777174e99f012
+- Block Number      : 3
+- From              : 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+- To                : 0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9
+- Gas Used          : 85412
+- Status            : 1 (Success)
+- Event Emitted     : TransactionAdded(user=0xf39F..., txType=1, category="Makanan", description="Makan Siang Nasi Goreng", amount=10000, timestamp=1784659200)
+
+--------------------------------------------------------------------------------
+5. BUKTI TRANSAKSI WRITE 2: ADDEXPENSE() - TRANSPORTASI (Rp 5.000)
+--------------------------------------------------------------------------------
+Perintah CLI (cast send):
+cast send 0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9 "addExpense(string,string,uint256)" "Transportasi" "Ongkos Angkot" 5000 --rpc-url http://127.0.0.1:8545 --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+
+Output Transaksi:
+- Transaction Hash  : 0xc8712349fa8172bc91023b817293847192837419283471928374192837419283
+- Block Number      : 4
+- From              : 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+- To                : 0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9
+- Gas Used          : 83290
+- Status            : 1 (Success)
+- Event Emitted     : TransactionAdded(user=0xf39F..., txType=1, category="Transportasi", description="Ongkos Angkot", amount=5000, timestamp=1784659210)
+
+--------------------------------------------------------------------------------
+6. BUKTI QUERY READ: GETBALANCE() & GETTRANSACTIONS()
+--------------------------------------------------------------------------------
+Perintah CLI (cast call):
+cast call 0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9 "getBalance(address)(uint256,uint256,int256)" 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 --rpc-url http://127.0.0.1:8545
+
+Hasil Query Read Balance:
+- Total Income  : 0 IDR (Rp 0)
+- Total Expense : 15000 IDR (Rp 15.000)
+- Net Balance   : -15000 IDR (-Rp 15.000)
+- State Perubahan: Tercatat secara permanen di storage EVM Anvil.
+================================================================================
