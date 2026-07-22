@@ -1,0 +1,16 @@
+# Foundry / Solidity Compilation Artifacts
+out/
+cache/
+
+# Local Anvil States
+state.json
+
+# Environment Variables & Secrets
+.env
+.env.local
+
+# IDE & OS Files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
