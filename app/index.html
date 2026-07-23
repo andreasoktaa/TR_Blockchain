@@ -195,11 +195,12 @@
                                 <th>Deskripsi</th>
                                 <th>Jumlah (Nominal IDR)</th>
                                 <th>Waktu Blok</th>
+                                <th>Detail On-Chain</th>
                             </tr>
                         </thead>
                         <tbody id="txTableBody">
                             <tr>
-                                <td colspan="6" class="text-center empty-state">
+                                <td colspan="7" class="text-center empty-state">
                                     Belum ada transaksi terhubung. Silakan hubungkan node dan isi alamat Smart Contract.
                                 </td>
                             </tr>
@@ -208,6 +209,54 @@
                 </div>
             </section>
         </main>
+
+        <!-- Dynamic Transaction Detail Modal (Orange/Black Glassmorphism) -->
+        <div id="detailModal" class="modal-overlay hidden" onclick="closeDetailModal(event)">
+            <div class="modal-card glass-panel" onclick="event.stopPropagation()">
+                <div class="modal-header">
+                    <h3>Detail Transaksi Blockchain</h3>
+                    <button class="btn-close" onclick="hideDetailModal()">×</button>
+                </div>
+                <div class="modal-body">
+                    <div class="detail-row">
+                        <span class="detail-label">Status Tipe</span>
+                        <span id="modalTxType" class="detail-val"></span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Kategori</span>
+                        <span id="modalCategory" class="detail-val font-bold"></span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Rincian</span>
+                        <span id="modalDescription" class="detail-val"></span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Jumlah</span>
+                        <span id="modalAmount" class="detail-val font-bold text-orange"></span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Waktu Blok</span>
+                        <span id="modalTimestamp" class="detail-val"></span>
+                    </div>
+                    <hr class="modal-divider">
+                    <div class="detail-row">
+                        <span class="detail-label">Block Number</span>
+                        <span id="modalBlock" class="detail-val font-mono"></span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Gas Used</span>
+                        <span id="modalGas" class="detail-val font-mono">Loading...</span>
+                    </div>
+                    <div class="detail-row-col">
+                        <span class="detail-label">Transaction Hash</span>
+                        <div class="hash-box">
+                            <span id="modalHash" class="detail-val font-mono text-xs select-all"></span>
+                            <button class="btn btn-secondary btn-xs" onclick="copyModalHash()">Salin</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- Notification Toast Box -->
         <div id="toastContainer" class="toast-container"></div>

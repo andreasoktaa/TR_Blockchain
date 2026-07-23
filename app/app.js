@@ -75,6 +75,17 @@ const btnSubmitTx = document.getElementById('btnSubmitTx');
 const btnSubmitText = document.getElementById('btnSubmitText');
 const btnSubmitSpinner = document.getElementById('btnSubmitSpinner');
 
+// Modal Elements
+const detailModal = document.getElementById('detailModal');
+const modalTxType = document.getElementById('modalTxType');
+const modalCategory = document.getElementById('modalCategory');
+const modalDescription = document.getElementById('modalDescription');
+const modalAmount = document.getElementById('modalAmount');
+const modalTimestamp = document.getElementById('modalTimestamp');
+const modalBlock = document.getElementById('modalBlock');
+const modalGas = document.getElementById('modalGas');
+const modalHash = document.getElementById('modalHash');
+
 // Initialize App
 document.addEventListener('DOMContentLoaded', () => {
     setupEventListeners();
@@ -320,15 +331,24 @@ async function fetchTransactions() {
         const rawTxs = await contract.getTransactions(userAddress);
         statTxCount.innerText = `${rawTxs.length} Transaksi Tercatat`;
 
-        // Format transactions array
-        transactionsCache = rawTxs.map((tx, idx) => ({
-            index: idx + 1,
-            txType: Number(tx.txType), // 0: Income, 1: Expense
-            category: tx.category,
-            description: tx.description,
-            amountIDR: tx.amount,
-            timestamp: Number(tx.timestamp)
-        }));
+        // 3. Query Past Events to retrieve transaction hashes and block details
+        const filter = contract.filters.TransactionAdded(userAddress);
+        const events = await contract.queryFilter(filter);
+
+        // Format transactions array matching event index to raw Transaction index
+        transactionsCache = rawTxs.map((tx, idx) => {
+            const correspondingEvent = events[idx];
+            return {
+                index: idx + 1,
+                txType: Number(tx.txType), // 0: Income, 1: Expense
+                category: tx.category,
+                description: tx.description,
+                amountIDR: tx.amount,
+                timestamp: Number(tx.timestamp),
+                txHash: correspondingEvent ? correspondingEvent.transactionHash : null,
+                blockNumber: correspondingEvent ? correspondingEvent.blockNumber : null
+            };
+        });
 
         // Render Table
         renderTable(transactionsCache);
@@ -346,7 +366,7 @@ async function fetchTransactions() {
     }
 }
 
-// Render Table Rows (Iconless clean design)
+// Render Table Rows (With Detail Action Button)
 function renderTable(data) {
     const tbody = document.getElementById('txTableBody');
     tbody.innerHTML = '';
@@ -354,7 +374,7 @@ function renderTable(data) {
     if (!data || data.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="6" class="text-center empty-state">
+                <td colspan="7" class="text-center empty-state">
                     Belum ada transaksi tercatat untuk akun ini.
                 </td>
             </tr>
@@ -377,19 +397,90 @@ function renderTable(data) {
             ? new Date(tx.timestamp * 1000).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })
             : 'Pending Block';
 
+        // Direct lookup key for opening details modal (index in transactionsCache is tx.index - 1)
+        const cacheIndex = tx.index - 1;
+
         tr.innerHTML = `
             <td class="font-mono">${tx.index}</td>
             <td>${typeBadge}</td>
             <td><strong>${escapeHtml(tx.category)}</strong></td>
-            <td>${escapeHtml(tx.description)}</td>
+            <td>${escapeHtml(tx.description || '-')}</td>
             <td class="font-mono" style="font-weight: 700; color: ${isIncome ? 'var(--income-green)' : 'var(--expense-red)'}">
                 ${isIncome ? '+' : '-'}${formatRupiah(tx.amountIDR)}
             </td>
             <td class="font-mono" style="font-size: 12px; color: var(--text-muted)">${formattedDate}</td>
+            <td>
+                <button class="btn btn-secondary btn-xs" onclick="showTxDetail(${cacheIndex})">Detail</button>
+            </td>
         `;
 
         tbody.appendChild(tr);
     });
+}
+
+// Detail Modal Handling
+async function showTxDetail(cacheIndex) {
+    const tx = transactionsCache[cacheIndex];
+    if (!tx) return;
+
+    // Fill basic details
+    modalTxType.innerHTML = tx.txType === 0 
+        ? `<span class="badge-income">Income</span>`
+        : `<span class="badge-expense">Expense</span>`;
+    modalCategory.innerText = tx.category;
+    modalDescription.innerText = tx.description || '-';
+    modalAmount.innerText = (tx.txType === 0 ? '+' : '-') + formatRupiah(tx.amountIDR);
+    
+    const formattedDate = tx.timestamp > 0 
+        ? new Date(tx.timestamp * 1000).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'long' })
+        : 'Pending Block';
+    modalTimestamp.innerText = formattedDate;
+
+    modalBlock.innerText = tx.blockNumber ? `#${tx.blockNumber}` : 'Pending';
+    modalHash.innerText = tx.txHash || 'N/A';
+
+    // Show modal
+    detailModal.classList.remove('hidden');
+
+    // Fetch Gas details dynamically via getTransactionReceipt
+    modalGas.innerText = 'Loading...';
+    if (tx.txHash && provider) {
+        try {
+            const receipt = await provider.getTransactionReceipt(tx.txHash);
+            if (receipt) {
+                modalGas.innerText = `${receipt.gasUsed.toString()} gas`;
+            } else {
+                modalGas.innerText = 'Receipt not found';
+            }
+        } catch (err) {
+            console.error('Failed to fetch gasUsed:', err);
+            modalGas.innerText = 'Error loading gas';
+        }
+    } else {
+        modalGas.innerText = 'N/A';
+    }
+}
+
+function hideDetailModal() {
+    detailModal.classList.add('hidden');
+}
+
+function closeDetailModal(event) {
+    if (event.target === detailModal) {
+        hideDetailModal();
+    }
+}
+
+function copyModalHash() {
+    const hashText = modalHash.innerText;
+    if (hashText && hashText !== 'N/A') {
+        navigator.clipboard.writeText(hashText)
+            .then(() => showToast('Hash transaksi berhasil disalin!', 'success'))
+            .catch(err => {
+                console.error('Copy failed:', err);
+                showToast('Gagal menyalin hash', 'error');
+            });
+    }
 }
 
 // Filter Table Logic

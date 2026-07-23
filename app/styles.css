@@ -1,6 +1,6 @@
 /* ==========================================================================
    CATATIN DAPP - DESIGN SYSTEM & STYLESHEET
-   Aesthetics: Sleek Obsidian Black, Vibrant Green/Red Buttons & Dynamic Categories
+   Aesthetics: Sleek Obsidian Black, Vibrant Green/Red Buttons & Modal Detail Overlay
    ========================================================================== */
 
 :root {
@@ -280,6 +280,12 @@ input:focus, select:focus {
     border-color: var(--primary);
 }
 
+.btn-xs {
+    padding: 4px 10px;
+    font-size: 11.5px;
+    border-radius: 4px;
+}
+
 /* Submit Buttons: Income (Green) vs Expense (Red) */
 .btn-submit {
     width: 100%;
@@ -536,6 +542,142 @@ td {
     border: 1px solid var(--expense-border);
     font-size: 11.5px;
     font-weight: 700;
+}
+
+/* Modal Overlay Styling (Orange/Black Glassmorphism) */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+}
+
+.modal-card {
+    width: 480px;
+    max-width: 90%;
+    animation: zoomIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(249, 115, 22, 0.15);
+}
+
+@keyframes zoomIn {
+    from { transform: scale(0.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding-bottom: 12px;
+}
+
+.modal-header h3 {
+    font-size: 17px;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -0.3px;
+}
+
+.btn-close {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 24px;
+    font-weight: 300;
+    cursor: pointer;
+    line-height: 1;
+    transition: var(--transition);
+}
+
+.btn-close:hover {
+    color: var(--primary);
+}
+
+.modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13.5px;
+}
+
+.detail-row-col {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 13.5px;
+}
+
+.detail-label {
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.detail-val {
+    color: var(--text-main);
+    text-align: right;
+}
+
+.font-bold {
+    font-weight: 700;
+}
+
+.text-orange {
+    color: var(--primary) !important;
+}
+
+.text-xs {
+    font-size: 12px;
+}
+
+.select-all {
+    user-select: all;
+    -webkit-user-select: all;
+}
+
+.modal-divider {
+    border: 0;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.08);
+    margin: 6px 0;
+}
+
+.hash-box {
+    display: flex;
+    background: rgba(10, 10, 12, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.hash-box span {
+    word-break: break-all;
+    text-align: left;
+}
+
+.btn-xs {
+    padding: 4px 8px;
+    font-size: 11px;
+    border-radius: 4px;
 }
 
 /* Toast Container */
